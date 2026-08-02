@@ -19,25 +19,18 @@ repositories {
     mavenCentral()
 }
 
-java {
-    // Minecraft 26.1.2 requires Java 25 for the toolchain
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(25)
-    }
-    withSourcesJar()
-}
-
 dependencies {
-    // Minecraft is resolved directly through Mojang mappings (no Yarn for 26.1+)
+    // Minecraft 26.1.2 ships unobfuscated - no `mappings` block is needed
+    // (Loom errors out if you try to apply Mojang/Yarn mappings on top of it).
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings loom.officialMojangMappings()
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
-    // Xaero's mods: compileOnly, ship pre-remapped jars for official mappings, not bundled.
-    // Players are expected to install Xaero's Minimap + World Map themselves.
-    modCompileOnly "xaero.minimap:xaerominimap-fabric-${project.minecraft_version}:${project.xaero_minimap_version}"
-    modCompileOnly "xaero.map:xaeroworldmap-fabric-${project.minecraft_version}:${project.xaero_worldmap_version}"
+    // Xaero's mods: compileOnly, not bundled. Players are expected to install
+    // Xaero's Minimap + World Map themselves. No "mod" prefix needed since
+    // 26.1.2 has no obfuscation left to remap.
+    compileOnly "xaero.minimap:xaerominimap-fabric-${project.minecraft_version}:${project.xaero_minimap_version}"
+    compileOnly "xaero.map:xaeroworldmap-fabric-${project.minecraft_version}:${project.xaero_worldmap_version}"
 }
 
 processResources {
@@ -51,6 +44,12 @@ processResources {
 
 tasks.withType(JavaCompile).configureEach {
     it.options.release = 25
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
 jar {
