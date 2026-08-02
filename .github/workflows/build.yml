@@ -7,6 +7,10 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
+permissions:
+  issues: write
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -25,9 +29,25 @@ jobs:
           gradle-version: '9.4.0'
 
       - name: Build
-        run: gradle build --stacktrace
+        shell: bash
+        run: |
+          set -o pipefail
+          gradle build --stacktrace 2>&1 | tee build_output.txt
+
+      - name: Post log on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          tail -c 60000 build_output.txt > tail.txt
+          gh issue create \
+            --title "CI build failure (run ${{ github.run_id }})" \
+            --body-file tail.txt \
+            --repo "${{ github.repository }}"
 
       - name: Upload artifacts
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: xaeroseedmap
