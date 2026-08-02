@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "xaeroseedmap",
+  "version": "${version}",
+  "name": "Xaero SeedMap",
+  "description": "Addon for Xaero's World Map: preview biomes (and later structures/dungeons) for any seed without needing to load the world.",
+  "authors": ["OptimistOpti"],
+  "contact": {
+    "homepage": "https://github.com/OptimistOpti/XaeroSeedMapMod",
+    "sources": "https://github.com/OptimistOpti/XaeroSeedMapMod",
+    "issues": "https://github.com/OptimistOpti/XaeroSeedMapMod/issues"
+  },
+  "license": "MIT",
+  "icon": "assets/xaeroseedmap/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.optimistopti.xaeroseedmap.XaeroSeedMapClient"
+    ]
+  },
+  "mixins": [
+    "xaeroseedmap.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.18.4",
+    "fabric-api": "*",
+    "minecraft": "26.1.2",
+    "xaerominimap": "*",
+    "xaeroworldmap": "*"
+  },
+  "custom": {
+    "modmenu": {
+      "badges": ["client"]
+    }
+  }
+}

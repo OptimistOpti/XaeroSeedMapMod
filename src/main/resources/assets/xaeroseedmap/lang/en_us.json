@@ -1,0 +1,19 @@
+{
+  "key.xaeroseedmap.open_settings": "Open SeedMap Settings",
+  "key.xaeroseedmap.open_seedmap": "Open Seed Map",
+  "key.category.xaeroseedmap": "Xaero SeedMap",
+
+  "xaeroseedmap.settings.title": "Xaero SeedMap - Settings",
+  "xaeroseedmap.settings.seed": "World Seed",
+  "xaeroseedmap.settings.seed.placeholder": "Enter seed (number or text)",
+  "xaeroseedmap.settings.open_map": "Open Seed Map",
+  "xaeroseedmap.settings.save": "Save",
+  "xaeroseedmap.settings.no_seed": "Enter a seed first",
+
+  "xaeroseedmap.worldmap.button": "Seed Map",
+  "xaeroseedmap.worldmap.button.tooltip": "Preview biomes for the seed set in Xaero SeedMap settings",
+
+  "xaeroseedmap.map.title": "Seed Preview: %s",
+  "xaeroseedmap.map.generating": "Sampling biomes...",
+  "xaeroseedmap.map.no_seed": "No seed configured. Open SeedMap settings first."
+}

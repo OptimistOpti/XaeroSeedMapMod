@@ -1,0 +1,19 @@
+{
+  "key.xaeroseedmap.open_settings": "Открыть настройки SeedMap",
+  "key.xaeroseedmap.open_seedmap": "Открыть карту по сиду",
+  "key.category.xaeroseedmap": "Xaero SeedMap",
+
+  "xaeroseedmap.settings.title": "Xaero SeedMap - Настройки",
+  "xaeroseedmap.settings.seed": "Сид мира",
+  "xaeroseedmap.settings.seed.placeholder": "Введите сид (число или текст)",
+  "xaeroseedmap.settings.open_map": "Открыть карту по сиду",
+  "xaeroseedmap.settings.save": "Сохранить",
+  "xaeroseedmap.settings.no_seed": "Сначала введите сид",
+
+  "xaeroseedmap.worldmap.button": "Seed Map",
+  "xaeroseedmap.worldmap.button.tooltip": "Просмотр биомов по сиду, заданному в настройках Xaero SeedMap",
+
+  "xaeroseedmap.map.title": "Превью сида: %s",
+  "xaeroseedmap.map.generating": "Считываем биомы...",
+  "xaeroseedmap.map.no_seed": "Сид не задан. Сначала откройте настройки SeedMap."
+}
