@@ -13,7 +13,7 @@ This is a working project skeleton, not a finished, tested mod. What's in place:
 - ✅ Standalone fullscreen "Seed Map" screen: pan with left-click drag, zoom
   with scroll wheel, live-samples biome colors into a texture.
 - ✅ Config persisted to `config/xaeroseedmap.json`.
-- ✅ GitHub Actions build (Gradle 9.4.0 / JDK 25 / Fabric Loom 1.15, official
+- ✅ GitHub Actions build (Gradle 9.4.0 (see gradle.properties for exact plugin versions) / JDK 25 / Fabric Loom 1.17-SNAPSHOT, official
   Mojang mappings — 26.1.2 no longer uses Yarn).
 - ⚠️ **`SeedBiomeSampler` (`gen/`) is unfinished on purpose.** Building a
   `BiomeSource`/`ChunkGenerator` for an arbitrary seed *without* a loaded
@@ -52,7 +52,7 @@ and commit the wrapper if you'd rather use `./gradlew`.)
 
 Install these yourself — they are `compileOnly` here, not bundled:
 
-- Fabric API `0.146.1+26.1.2`
+- Fabric API `0.155.2+26.1.2`
 - Xaero's Minimap `26.1.0`+ (Fabric, MC 26.1.2)
 - Xaero's World Map `1.41.0`+ (Fabric, MC 26.1.2)
 
