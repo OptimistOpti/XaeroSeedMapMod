@@ -2,7 +2,6 @@ package com.optimistopti.xaeroseedmap.gen;
 
 import com.mojang.serialization.Lifecycle;
 import net.minecraft.SharedConstants;
-import net.minecraft.client.Minecraft;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.Holder;
 import net.minecraft.core.QuartPos;
@@ -93,17 +92,20 @@ public class SeedBiomeSampler {
     }
 
     /**
-     * Prefers the currently loaded world's real registries (covers server
-     * datapacks) when one is loaded; otherwise bootstraps a standalone,
-     * vanilla-only RegistryAccess from scratch and caches it for the rest of
-     * the game session, since building it isn't free.
+     * Always bootstraps a standalone, vanilla-only RegistryAccess and caches
+     * it for the rest of the game session.
+     *
+     * Deliberately does NOT reuse {@code Minecraft.getInstance().level.registryAccess()}
+     * even when a world is loaded: that registry access is the one synced for
+     * actual gameplay and does not include world-creation-only registries like
+     * {@code worldgen/world_preset} (confirmed by a real runtime crash - "Missing
+     * registry: ResourceKey[minecraft:root / minecraft:worldgen/world_preset]"
+     * from {@code WorldPresets.getNormalOverworld}). It's also the semantically
+     * right choice here: a seed preview should reflect plain vanilla generation
+     * for the seed the user typed, not whatever datapacks the currently-joined
+     * server happens to run.
      */
     private static RegistryAccess resolveRegistryAccess() {
-        Minecraft client = Minecraft.getInstance();
-        if (client.level != null) {
-            return client.level.registryAccess();
-        }
-
         RegistryAccess cached = CACHED_REGISTRY_ACCESS;
         if (cached != null) {
             return cached;
