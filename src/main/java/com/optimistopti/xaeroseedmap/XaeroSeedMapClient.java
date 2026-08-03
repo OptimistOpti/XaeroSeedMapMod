@@ -5,12 +5,13 @@ import com.optimistopti.xaeroseedmap.config.SeedMapConfig;
 import com.optimistopti.xaeroseedmap.gui.SeedMapScreen;
 import com.optimistopti.xaeroseedmap.gui.SeedMapSettingsScreen;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
-
+import net.minecraft.resources.Identifier;
+import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,18 +27,21 @@ public class XaeroSeedMapClient implements ClientModInitializer {
     public void onInitializeClient() {
         SeedMapConfig.INSTANCE = SeedMapConfig.load();
 
-        openSettingsKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+        KeyMapping.Category category = KeyMapping.Category.register(
+                Identifier.fromNamespaceAndPath(MOD_ID, "main"));
+
+        openSettingsKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.xaeroseedmap.open_settings",
                 InputConstants.Type.KEYSYM,
-                InputConstants.KEY_UNKNOWN.getValue(),
-                "key.category.xaeroseedmap"
+                GLFW.GLFW_KEY_UNKNOWN,
+                category
         ));
 
-        openSeedMapKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+        openSeedMapKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.xaeroseedmap.open_seedmap",
                 InputConstants.Type.KEYSYM,
-                InputConstants.KEY_UNKNOWN.getValue(),
-                "key.category.xaeroseedmap"
+                GLFW.GLFW_KEY_UNKNOWN,
+                category
         ));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
@@ -54,7 +58,7 @@ public class XaeroSeedMapClient implements ClientModInitializer {
 
     public static void openSettings(Minecraft client) {
         Screen current = client.screen;
-        client.setScreen(new SeedMapSettingsScreen(current));
+        client.gui.setScreen(new SeedMapSettingsScreen(current));
     }
 
     public static void openSeedMap(Minecraft client) {
@@ -63,6 +67,6 @@ public class XaeroSeedMapClient implements ClientModInitializer {
             return;
         }
         Screen current = client.screen;
-        client.setScreen(new SeedMapScreen(current, SeedMapConfig.INSTANCE.parsedSeed()));
+        client.gui.setScreen(new SeedMapScreen(current, SeedMapConfig.INSTANCE.parsedSeed()));
     }
 }

@@ -1,8 +1,8 @@
 package com.optimistopti.xaeroseedmap.biome;
 
 import net.minecraft.core.Holder;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 
@@ -97,7 +97,7 @@ public final class BiomeColors {
                 .orElse(FALLBACK);
     }
 
-    public static int colorFor(ResourceLocation biomeId) {
+    public static int colorFor(Identifier biomeId) {
         for (Map.Entry<ResourceKey<Biome>, Integer> e : COLORS.entrySet()) {
             if (e.getKey().location().equals(biomeId)) return e.getValue();
         }
