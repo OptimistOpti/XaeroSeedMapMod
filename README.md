@@ -27,10 +27,9 @@ This is a working project skeleton, not a finished, tested mod. What's in place:
   sources). It has **not been run in-game by me** (I only have a build
   sandbox, not a Minecraft client) - if something's off at runtime, this file
   and its bootstrap method are the first place to look.
-- ✅ Fullscreen "Seed Map" screen draws the sampled biome grid as filled
-  rectangles (`GuiGraphicsExtractor#fill`) - deliberately skips
-  `DynamicTexture`/`NativeImage` since that's a second, separately-risky API
-  surface a flat color grid doesn't need.
+- ✅ Accurate biome color palette (adapted from a real sibling project, see
+  Credits below), hover tooltip showing biome name + coordinates under the
+  cursor, and camera position/zoom persist across reopening the map.
 - ❌ No button injected into Xaero's actual World Map screen yet. Xaero's
   mods don't publish a documented plugin/addon API for adding UI — reaching
   into their screen needs a Mixin against their real (Fabric, official
@@ -61,6 +60,18 @@ Install these yourself — they are `compileOnly` here, not bundled:
 - Fabric API `0.155.2+26.1.2`
 - Xaero's Minimap `26.1.0`+ (Fabric, MC 26.1.2)
 - Xaero's World Map `1.41.0`+ (Fabric, MC 26.1.2)
+
+## Credits
+
+The biome color palette in `BiomeColors.java` is adapted from
+[TGGamesYT/xaero-seedmap](https://github.com/TGGamesYT/xaero-seedmap), a
+sibling project doing the same kind of thing for an older MC/Yarn build. Its
+approach is also worth revisiting for the structures roadmap item below - it
+uses [cubiomes](https://github.com/Cubitect/cubiomes) (a native C library,
+via JNI) to compute structure placements algorithmically and instantly,
+without any chunk generation, which would likely be a better fit than trying
+to drive vanilla's own structure-placement code for this than what's
+described in item 3 below.
 
 ## Roadmap
 
