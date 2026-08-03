@@ -15,16 +15,22 @@ This is a working project skeleton, not a finished, tested mod. What's in place:
 - ✅ Config persisted to `config/xaeroseedmap.json`.
 - ✅ GitHub Actions build (Gradle 9.4.0 (see gradle.properties for exact plugin versions) / JDK 25 / Fabric Loom 1.17-SNAPSHOT, official
   Mojang mappings — 26.1.2 no longer uses Yarn).
-- ⚠️ **`SeedBiomeSampler` (`gen/`) is unfinished on purpose.** Building a
-  `BiomeSource`/`ChunkGenerator` for an arbitrary seed *without* a loaded
-  world normally means bootstrapping a `RegistryAccess` the way vanilla's
-  "Create New World" screen does (see `WorldOpenFlows` / `CreateWorldScreen`
-  in the 26.1.2 client sources — browse them at https://mcsrc.dev). I didn't
-  have access to the actual 26.1.2 client jar while scaffolding this, so
-  that bootstrap is stubbed with a `TODO` and throws instead of guessing
-  wrong method names. Everything downstream (GUI, texture rendering, biome
-  color table, config, keybinds) is not version-sensitive and should work
-  once that one method is filled in.
+- ✅ **`SeedBiomeSampler` (`gen/`) now has a real, complete implementation.**
+  It bootstraps a standalone `RegistryAccess` via vanilla's own
+  `WorldLoader.InitConfig`/`WorldLoader.load` machinery (the same mechanism
+  `CreateWorldScreen` uses internally) when no world is loaded, then builds the
+  vanilla overworld `ChunkGenerator`/`BiomeSource` via
+  `WorldPresets.getNormalOverworld(...)` and re-seeds it with a fresh
+  `RandomState` for the requested seed - no need to join a world first. This
+  was cross-checked against real decompiled 26.1.1 sources plus a real,
+  actively-maintained 26.2-targeting utility (see code comments for both
+  sources). It has **not been run in-game by me** (I only have a build
+  sandbox, not a Minecraft client) - if something's off at runtime, this file
+  and its bootstrap method are the first place to look.
+- ✅ Fullscreen "Seed Map" screen draws the sampled biome grid as filled
+  rectangles (`GuiGraphicsExtractor#fill`) - deliberately skips
+  `DynamicTexture`/`NativeImage` since that's a second, separately-risky API
+  surface a flat color grid doesn't need.
 - ❌ No button injected into Xaero's actual World Map screen yet. Xaero's
   mods don't publish a documented plugin/addon API for adding UI — reaching
   into their screen needs a Mixin against their real (Fabric, official
@@ -58,13 +64,17 @@ Install these yourself — they are `compileOnly` here, not bundled:
 
 ## Roadmap
 
-1. Finish `SeedBiomeSampler`'s `RegistryAccess` bootstrap so biome sampling
-   actually runs without joining a world first.
+1. ~~Finish `SeedBiomeSampler`'s `RegistryAccess` bootstrap~~ - done; needs
+   in-game verification since I can't run a Minecraft client myself.
 2. Find & Mixin into Xaero's real World Map screen class to add the in-map
    "Seed Map" button (currently: `HudMod.INSTANCE` is the known 26.1.2 entry
    point for the minimap side; the world map screen class still needs to be
-   identified from the installed jar).
+   identified from the installed jar). **Deliberately deferred for now** -
+   use the mod's own keybind or the settings screen's "Open Seed Map" button
+   in the meantime.
 3. Structure/dungeon overlay (villages, strongholds, spawners, etc.) via
    `ChunkGenerator#findNearestMapStructure`-style lookups on the same
    generator instance.
-4. Cache sampled regions to disk so re-opening the same seed is instant.
+4. Cache sampled regions to disk so re-opening the same seed is instant, and
+   cache the bootstrapped `RegistryAccess` across game restarts if the
+   ~1s one-time bootstrap cost turns out to be noticeable.
