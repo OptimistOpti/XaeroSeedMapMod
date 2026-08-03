@@ -33,7 +33,7 @@ public class SeedMapSettingsScreen extends Screen {
         this.addRenderableWidget(Button.builder(Component.translatable("xaeroseedmap.settings.open_map"), b -> {
                     saveSeed();
                     if (SeedMapConfig.INSTANCE.hasSeed()) {
-                        this.minecraft.gui.setScreen(new SeedMapScreen(this, SeedMapConfig.INSTANCE.parsedSeed()));
+                        this.minecraft.setScreen(new SeedMapScreen(this, SeedMapConfig.INSTANCE.parsedSeed()));
                     }
                 })
                 .bounds(centerX - fieldWidth / 2, 95, fieldWidth, 20)
@@ -41,7 +41,7 @@ public class SeedMapSettingsScreen extends Screen {
 
         this.addRenderableWidget(Button.builder(Component.translatable("xaeroseedmap.settings.save"), b -> {
                     saveSeed();
-                    this.minecraft.gui.setScreen(this.parent);
+                    this.minecraft.setScreen(this.parent);
                 })
                 .bounds(centerX - fieldWidth / 2, 125, fieldWidth, 20)
                 .build());
@@ -55,7 +55,7 @@ public class SeedMapSettingsScreen extends Screen {
     @Override
     public void onClose() {
         saveSeed();
-        this.minecraft.gui.setScreen(this.parent);
+        this.minecraft.setScreen(this.parent);
     }
 
     @Override

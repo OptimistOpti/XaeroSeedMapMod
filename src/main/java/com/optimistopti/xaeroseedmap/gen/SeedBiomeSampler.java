@@ -13,7 +13,6 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator;
 import net.minecraft.world.level.levelgen.RandomState;
-import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
 
 import java.util.HashMap;
@@ -21,20 +20,17 @@ import java.util.Map;
 
 /**
  * Samples the overworld biome grid for an arbitrary seed WITHOUT loading a world,
- * by re-creating the same overworld ChunkGenerator/BiomeSource vanilla uses when
- * you create a new "Default" world, then re-seeding its RandomState.
+ * by re-creating the same overworld ChunkGenerator/BiomeSource vanilla uses for a
+ * default "Normal" world, then computing a RandomState for the requested seed.
  *
- * IMPORTANT / NOT YET RUNTIME-VERIFIED AGAINST 26.1.2:
- * This compiles against real symbols pulled from decompiled 26.1.2 sources
- * (mcsrc.dev) and real 26.1.2-targeting mods on GitHub, but has not been run
- * in-game yet. Two things are known-incomplete on purpose:
- *  1. {@link #resolveRegistryAccess()} only works once the client has joined
- *     a world this session; bootstrapping a standalone RegistryAccess with no
- *     world loaded needs mirroring CreateWorldScreen's WorldLoader.InitConfig
- *     flow, which is a bigger follow-up (see README roadmap).
- *  2. The NoiseBasedChunkGenerator cast below assumes the overworld uses
- *     vanilla noise generation; that's true for a vanilla/default seed but
- *     should be guarded better if this ever needs to support flat worlds etc.
+ * Verified against the real decompiled 26.1.1 sources
+ * (github.com/ohnodev/decompiled-minecraft-26-1-1, close enough to 26.1.2 for
+ * these worldgen classes which aren't part of the GUI/rendering rework) -
+ * RegistryAccess#lookupOrThrow, WorldPresets#getNormalOverworld,
+ * NoiseBasedChunkGenerator#generatorSettings, RandomState#create/#sampler,
+ * BiomeSource#getNoiseBiome and ResourceKey#identifier all confirmed to exist
+ * with these exact signatures. The one still-unverified piece is
+ * {@link #resolveRegistryAccess()} - see its TODO.
  */
 public class SeedBiomeSampler {
 
@@ -50,13 +46,7 @@ public class SeedBiomeSampler {
     public static SeedBiomeSampler create(long seed) {
         RegistryAccess registryAccess = resolveRegistryAccess();
 
-        WorldDimensions dimensions = WorldPresets.createNormalWorldDimensions(registryAccess);
-        WorldDimensions.Complete complete = dimensions.bake(registryAccess.registryOrThrow(Registries.LEVEL_STEM));
-
-        LevelStem overworldStem = complete.dimensions().get(LevelStem.OVERWORLD)
-                .orElseThrow(() -> new IllegalStateException("No overworld LevelStem registered"))
-                .value();
-
+        LevelStem overworldStem = WorldPresets.getNormalOverworld(registryAccess);
         ChunkGenerator generator = overworldStem.generator();
         BiomeSource biomeSource = generator.getBiomeSource();
 
@@ -66,7 +56,7 @@ public class SeedBiomeSampler {
 
         RandomState randomState = RandomState.create(
                 noiseGenerator.generatorSettings().value(),
-                registryAccess.registryOrThrow(Registries.NOISE),
+                registryAccess.lookupOrThrow(Registries.NOISE),
                 seed);
 
         return new SeedBiomeSampler(biomeSource, randomState.sampler());

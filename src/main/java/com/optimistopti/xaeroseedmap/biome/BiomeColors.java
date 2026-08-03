@@ -99,7 +99,7 @@ public final class BiomeColors {
 
     public static int colorFor(Identifier biomeId) {
         for (Map.Entry<ResourceKey<Biome>, Integer> e : COLORS.entrySet()) {
-            if (e.getKey().location().equals(biomeId)) return e.getValue();
+            if (e.getKey().identifier().equals(biomeId)) return e.getValue();
         }
         return FALLBACK;
     }

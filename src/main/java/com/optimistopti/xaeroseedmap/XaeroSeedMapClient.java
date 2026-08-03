@@ -58,7 +58,7 @@ public class XaeroSeedMapClient implements ClientModInitializer {
 
     public static void openSettings(Minecraft client) {
         Screen current = client.screen;
-        client.gui.setScreen(new SeedMapSettingsScreen(current));
+        client.setScreen(new SeedMapSettingsScreen(current));
     }
 
     public static void openSeedMap(Minecraft client) {
@@ -67,6 +67,6 @@ public class XaeroSeedMapClient implements ClientModInitializer {
             return;
         }
         Screen current = client.screen;
-        client.gui.setScreen(new SeedMapScreen(current, SeedMapConfig.INSTANCE.parsedSeed()));
+        client.setScreen(new SeedMapScreen(current, SeedMapConfig.INSTANCE.parsedSeed()));
     }
 }
