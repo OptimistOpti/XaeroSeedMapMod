@@ -27,6 +27,9 @@ public class SeedMapConfig {
     public String rawSeed = "";
     public int sampleChunkSize = 4;   // biome samples grouped per N x N chunks per pixel (perf/quality tradeoff)
     public int viewRadiusChunks = 512; // how far the seed map view extends from 0,0 by default
+    public double lastCenterX = 0;
+    public double lastCenterZ = 0;
+    public double lastBlocksPerCell = 16.0;
 
     public static SeedMapConfig load() {
         if (Files.exists(PATH)) {

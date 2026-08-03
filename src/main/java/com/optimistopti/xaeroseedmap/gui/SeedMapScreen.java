@@ -2,12 +2,14 @@ package com.optimistopti.xaeroseedmap.gui;
 
 import com.optimistopti.xaeroseedmap.XaeroSeedMapClient;
 import com.optimistopti.xaeroseedmap.biome.BiomeColors;
+import com.optimistopti.xaeroseedmap.config.SeedMapConfig;
 import com.optimistopti.xaeroseedmap.gen.SeedBiomeSampler;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.biome.Biome;
 
 import java.util.concurrent.CompletableFuture;
@@ -39,10 +41,18 @@ public class SeedMapScreen extends Screen {
     private volatile int[] colorGrid;
     private volatile String errorMessage;
 
-    private double centerX = 0;
-    private double centerZ = 0;
+    private double centerX;
+    private double centerZ;
     /** Blocks represented by one grid cell. Lower = more zoomed in. */
-    private double blocksPerCell = 16.0;
+    private double blocksPerCell;
+
+    // Parameters the currently-displayed colorGrid was actually built with -
+    // kept separate from centerX/centerZ/blocksPerCell so cursor->world math
+    // stays consistent with what's on screen even while a regen is pending.
+    private volatile double gridCenterX;
+    private volatile double gridCenterZ;
+    private volatile double gridBlocksPerCell;
+    private int lastOriginX, lastOriginY, lastCellPx;
 
     private boolean dragging = false;
     private double dragStartMouseX, dragStartMouseZ;
@@ -55,6 +65,9 @@ public class SeedMapScreen extends Screen {
         super(Component.translatable("xaeroseedmap.map.title", Long.toString(seed)));
         this.parent = parent;
         this.seed = seed;
+        this.centerX = SeedMapConfig.INSTANCE.lastCenterX;
+        this.centerZ = SeedMapConfig.INSTANCE.lastCenterZ;
+        this.blocksPerCell = SeedMapConfig.INSTANCE.lastBlocksPerCell;
     }
 
     @Override
@@ -94,11 +107,15 @@ public class SeedMapScreen extends Screen {
         maybeRegenerate();
 
         int[] grid = this.colorGrid;
+        int originX = 0, originY = 0, cellPx = 0;
         if (grid != null) {
             int size = Math.min(this.width, this.height) - 40;
-            int cellPx = Math.max(1, size / GRID_SIZE);
-            int originX = (this.width - cellPx * GRID_SIZE) / 2;
-            int originY = (this.height - cellPx * GRID_SIZE) / 2;
+            cellPx = Math.max(1, size / GRID_SIZE);
+            originX = (this.width - cellPx * GRID_SIZE) / 2;
+            originY = (this.height - cellPx * GRID_SIZE) / 2;
+            this.lastOriginX = originX;
+            this.lastOriginY = originY;
+            this.lastCellPx = cellPx;
 
             for (int gz = 0; gz < GRID_SIZE; gz++) {
                 for (int gx = 0; gx < GRID_SIZE; gx++) {
@@ -114,6 +131,32 @@ public class SeedMapScreen extends Screen {
         graphics.text(this.font,
                 String.format("X: %.0f  Z: %.0f  (%.1f blocks/cell)", centerX, centerZ, blocksPerCell),
                 8, this.height - 16, 0xFFAAAAAA, false);
+
+        renderHoverBiome(graphics, mouseX, mouseY);
+    }
+
+    private void renderHoverBiome(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        if (this.sampler == null || this.lastCellPx <= 0) {
+            return;
+        }
+        int gx = (mouseX - this.lastOriginX) / this.lastCellPx;
+        int gz = (mouseY - this.lastOriginY) / this.lastCellPx;
+        if (gx < 0 || gx >= GRID_SIZE || gz < 0 || gz >= GRID_SIZE) {
+            return;
+        }
+
+        double half = (GRID_SIZE / 2.0) * this.gridBlocksPerCell;
+        int worldX = (int) (this.gridCenterX - half + gx * this.gridBlocksPerCell);
+        int worldZ = (int) (this.gridCenterZ - half + gz * this.gridBlocksPerCell);
+
+        var biomeKey = this.sampler.getBiomeKey(worldX, worldZ);
+        Identifier biomeId = biomeKey != null ? biomeKey.identifier() : null;
+        Component name = biomeId != null
+                ? Component.translatable(biomeId.toLanguageKey("biome"))
+                : Component.literal("?");
+
+        String line = String.format("%s  (%d, %d)", name.getString(), worldX, worldZ);
+        graphics.text(this.font, line, 8, this.height - 30, 0xFFFFFFFF, false);
     }
 
     private void maybeRegenerate() {
@@ -140,6 +183,9 @@ public class SeedMapScreen extends Screen {
                     }
                 }
                 this.colorGrid = grid;
+                this.gridCenterX = cx;
+                this.gridCenterZ = cz;
+                this.gridBlocksPerCell = bpc;
             } catch (Exception e) {
                 XaeroSeedMapClient.LOGGER.error("Failed to sample biome grid", e);
                 this.errorMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
@@ -191,6 +237,10 @@ public class SeedMapScreen extends Screen {
 
     @Override
     public void onClose() {
+        SeedMapConfig.INSTANCE.lastCenterX = this.centerX;
+        SeedMapConfig.INSTANCE.lastCenterZ = this.centerZ;
+        SeedMapConfig.INSTANCE.lastBlocksPerCell = this.blocksPerCell;
+        SeedMapConfig.INSTANCE.save();
         this.minecraft.setScreen(this.parent);
     }
 
