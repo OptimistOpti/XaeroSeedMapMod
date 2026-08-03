@@ -1,5 +1,6 @@
 package com.optimistopti.xaeroseedmap.gui;
 
+import com.optimistopti.xaeroseedmap.XaeroSeedMapClient;
 import com.optimistopti.xaeroseedmap.biome.BiomeColors;
 import com.optimistopti.xaeroseedmap.gen.SeedBiomeSampler;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -36,6 +37,7 @@ public class SeedMapScreen extends Screen {
 
     private SeedBiomeSampler sampler;
     private volatile int[] colorGrid;
+    private volatile String errorMessage;
 
     private double centerX = 0;
     private double centerZ = 0;
@@ -58,12 +60,29 @@ public class SeedMapScreen extends Screen {
     @Override
     protected void init() {
         CompletableFuture.runAsync(() -> this.sampler = SeedBiomeSampler.create(this.seed), SAMPLER_POOL)
-                .thenRun(() -> this.dirty = true);
+                .whenComplete((unused, throwable) -> {
+                    if (throwable != null) {
+                        XaeroSeedMapClient.LOGGER.error("Failed to create seed biome sampler", throwable);
+                        this.errorMessage = throwable.getClass().getSimpleName() + ": " + throwable.getMessage();
+                    } else {
+                        this.dirty = true;
+                    }
+                });
     }
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         super.extractRenderState(graphics, mouseX, mouseY, delta);
+
+        if (this.errorMessage != null) {
+            graphics.centeredText(this.font,
+                    Component.literal("Error: " + this.errorMessage),
+                    this.width / 2, this.height / 2, 0xFFFF5555);
+            graphics.centeredText(this.font,
+                    Component.literal("Check the game log for the full stack trace."),
+                    this.width / 2, this.height / 2 + 12, 0xFFAAAAAA);
+            return;
+        }
 
         if (this.sampler == null) {
             graphics.centeredText(this.font,
@@ -122,7 +141,8 @@ public class SeedMapScreen extends Screen {
                 }
                 this.colorGrid = grid;
             } catch (Exception e) {
-                // Sampler bootstrap not finished yet (see SeedBiomeSampler TODO) - leave grid as-is.
+                XaeroSeedMapClient.LOGGER.error("Failed to sample biome grid", e);
+                this.errorMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             } finally {
                 regenerating.set(false);
             }
